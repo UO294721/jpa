@@ -2,7 +2,9 @@ package uo.ri.cws.domain;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.Entity;
@@ -12,11 +14,13 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import uo.ri.cws.domain.base.BaseEntity;
 import uo.ri.util.assertion.ArgumentChecks;
 
 @Entity
-@Table(name = "TCONTRACTS")
+@Table(name = "TCONTRACTS", uniqueConstraints = @UniqueConstraint(columnNames = {
+		"MECHANIC_ID", "STARTDATE" }))
 public class Contract extends BaseEntity {
 
 	@OneToOne
@@ -198,7 +202,21 @@ public class Contract extends BaseEntity {
 		int yearsWorked = (int) ChronoUnit.YEARS.between(startDate,
 				endDate.plusDays(1));
 
-		return contractType.getCompensationDaysPerYear() * (annualBaseSalary / 365)
+		double payrollAmount = 0;
+
+		List<Payroll> payrolls12Months = new ArrayList<>(payrolls);
+		payrolls12Months.sort((p1, p2) -> p1.getDate().compareTo(p2.getDate()));
+
+		int months = 0;
+
+		for (Payroll p : payrolls12Months) {
+			if (months < 12) {
+				payrollAmount += p.getGrossSalary();
+			}
+			months++;
+		}
+
+		return contractType.getCompensationDaysPerYear() * (payrollAmount / 365)
 				* yearsWorked;
 	}
 

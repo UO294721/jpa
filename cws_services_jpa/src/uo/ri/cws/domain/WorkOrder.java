@@ -36,11 +36,11 @@ public class WorkOrder extends BaseEntity {
 	private WorkOrderState state = WorkOrderState.OPEN;
 
 	// accidental attributes
-	@ManyToOne(optional = false)
+	@ManyToOne
 	private Vehicle vehicle;
-	@ManyToOne(optional = false)
+	@ManyToOne
 	private Mechanic mechanic;
-	@ManyToOne(optional = false)
+	@ManyToOne
 	private Invoice invoice;
 	@OneToMany(mappedBy = "workOrder")
 	private Set<Intervention> interventions = new HashSet<>();
@@ -55,7 +55,7 @@ public class WorkOrder extends BaseEntity {
 		ArgumentChecks.isNotBlank(description,
 				"The work order's description cannot be blank");
 
-		this.date = date;
+		this.date = date.truncatedTo(ChronoUnit.MILLIS);
 		this.description = description;
 		Associations.Fixes.link(vehicle, this);
 	}
@@ -179,8 +179,8 @@ public class WorkOrder extends BaseEntity {
 		if (state != WorkOrderState.OPEN) {
 			throw new IllegalStateException("The work order is not in OPEN state");
 		}
-		this.state = WorkOrderState.ASSIGNED;
 		Associations.Assigns.link(mechanic, this);
+		this.state = WorkOrderState.ASSIGNED;
 	}
 
 	/**
@@ -195,8 +195,8 @@ public class WorkOrder extends BaseEntity {
 			throw new IllegalStateException(
 					"The work order is not in ASSIGNED state");
 		}
-		this.state = WorkOrderState.OPEN;
 		Associations.Assigns.unlink(this.mechanic, this);
+		this.state = WorkOrderState.OPEN;
 	}
 
 	/**
@@ -212,7 +212,6 @@ public class WorkOrder extends BaseEntity {
 					"The work order is not in FINISHED state");
 		}
 		this.state = WorkOrderState.OPEN;
-
 	}
 
 	public Set<Intervention> getInterventions() {

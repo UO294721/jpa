@@ -1,6 +1,7 @@
 package uo.ri.cws.domain;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,7 +16,7 @@ import uo.ri.util.assertion.ArgumentChecks;
 
 @Entity
 @Table(name = "TINTERVENTIONS", uniqueConstraints = @UniqueConstraint(columnNames = {
-		"DATE", "WORKORDER_ID", "MECHANIC_ID" }))
+		"DATE", "MECHANIC_ID" }))
 public class Intervention extends BaseEntity {
 	// natural attributes
 	@Basic(optional = false)
@@ -24,9 +25,9 @@ public class Intervention extends BaseEntity {
 	private int minutes;
 
 	// accidental attributes
-	@ManyToOne(optional = false)
+	@ManyToOne
 	private WorkOrder workOrder;
-	@ManyToOne(optional = false)
+	@ManyToOne
 	private Mechanic mechanic;
 	@OneToMany(mappedBy = "intervention")
 	private Set<Substitution> substitutions = new HashSet<>();
@@ -44,7 +45,7 @@ public class Intervention extends BaseEntity {
 		ArgumentChecks.isNotNull(mechanic,
 				"The intervention's mechanic cannot be null");
 
-		this.date = date;
+		this.date = date.truncatedTo(ChronoUnit.MILLIS);
 		this.minutes = minutes;
 		Associations.Intervenes.link(workOrder, this, mechanic);
 	}
@@ -59,7 +60,7 @@ public class Intervention extends BaseEntity {
 	}
 
 	public LocalDateTime getDate() {
-		return date.truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
+		return date.truncatedTo(ChronoUnit.MILLIS);
 	}
 
 	public int getMinutes() {

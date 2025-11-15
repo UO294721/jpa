@@ -3,6 +3,7 @@ package uo.ri.cws.domain;
 import java.util.HashSet;
 import java.util.Set;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -13,6 +14,7 @@ import uo.ri.util.assertion.ArgumentChecks;
 @Table(name = "TCLIENTS")
 public class Client extends BaseEntity {
 
+	@Column(unique = true)
 	private String nif;
 	private String name;
 	private String surname;

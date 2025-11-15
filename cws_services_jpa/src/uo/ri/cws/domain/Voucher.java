@@ -1,11 +1,13 @@
 package uo.ri.cws.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "TVOUCHERS")
 public class Voucher extends PaymentMean {
+	@Column(unique = true)
 	private String code;
 
 	private double available = 0.0;

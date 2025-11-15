@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -14,6 +15,7 @@ import uo.ri.util.assertion.ArgumentChecks;
 @Table(name = "TSpareParts")
 public class SparePart extends BaseEntity {
 	// natural attributes
+	@Column(unique = true)
 	private String code;
 	private String description;
 	private double price;

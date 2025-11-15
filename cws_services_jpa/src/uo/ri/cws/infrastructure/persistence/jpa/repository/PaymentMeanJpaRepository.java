@@ -5,10 +5,8 @@ import java.util.List;
 import uo.ri.cws.application.repository.PaymentMeanRepository;
 import uo.ri.cws.domain.PaymentMean;
 import uo.ri.cws.infrastructure.persistence.jpa.util.BaseJpaRepository;
-import uo.ri.cws.infrastructure.persistence.jpa.util.Jpa;
 
-public class PaymentMeanJpaRepository
-		extends BaseJpaRepository<PaymentMean>
+public class PaymentMeanJpaRepository extends BaseJpaRepository<PaymentMean>
 		implements PaymentMeanRepository {
 
 	@Override

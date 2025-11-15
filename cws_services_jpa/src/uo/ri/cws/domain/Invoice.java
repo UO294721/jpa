@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -21,6 +22,7 @@ public class Invoice extends BaseEntity {
 	}
 
 	// natural attributes
+	@Column(unique = true)
 	private Long number;
 	private LocalDate date;
 	private double amount;

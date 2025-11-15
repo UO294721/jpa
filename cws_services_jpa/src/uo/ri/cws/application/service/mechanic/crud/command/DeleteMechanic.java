@@ -1,5 +1,7 @@
 package uo.ri.cws.application.service.mechanic.crud.command;
 
+import java.util.Optional;
+
 import uo.ri.conf.Factories;
 import uo.ri.cws.application.repository.MechanicRepository;
 import uo.ri.cws.application.util.command.Command;
@@ -19,8 +21,9 @@ public class DeleteMechanic implements Command<Void> {
 	@Override
 	public Void execute() throws BusinessException {
 
-		Mechanic m = repo.findById(mechanicId)
-				.orElseThrow(() -> new BusinessException("Mechanic not found"));
+		Optional<Mechanic> om = repo.findById(mechanicId);
+		BusinessChecks.exists(om, "The mechanic does not exist");
+		Mechanic m = om.get();
 
 		BusinessChecks.isTrue(m.getInterventions().isEmpty(),
 				"Cannot delete mechanic with interventions");

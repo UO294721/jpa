@@ -3,22 +3,33 @@ package uo.ri.cws.domain;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import uo.ri.cws.domain.base.BaseEntity;
 import uo.ri.util.assertion.ArgumentChecks;
 
 @Entity
-@Table(name = "TPAYROLLS")
+@Table(name = "TPAYROLLS", uniqueConstraints = @UniqueConstraint(columnNames = {
+		"CONTRACT_ID", "DATE" }))
 public class Payroll extends BaseEntity {
 
+	@Basic(optional = false)
 	private LocalDate date;
+	@Basic(optional = false)
 	private double extraSalary;
+	@Basic(optional = false)
 	private double taxDeduction;
+	@Basic(optional = false)
 	private double nicDeduction;
+	@Basic(optional = false)
 	private double productivityEarning;
+	@Basic(optional = false)
 	private double trienniumEarning;
+	@Basic(optional = false)
+	private double baseSalary;
 
 	@ManyToOne
 	private Contract contract;
@@ -34,12 +45,12 @@ public class Payroll extends BaseEntity {
 		this.contract = c;
 		this.date = payrollDate;
 		Associations.Generates.link(c, this);
-		productivityEarning = calculateProductivityEarning();
+
+		calculateFields();
 	}
 
 	public double getGrossSalary() {
-		return getMonthlyBaseSalary() + extraSalary + productivityEarning
-				+ trienniumEarning;
+		return baseSalary + extraSalary + productivityEarning + trienniumEarning;
 	}
 
 	public LocalDate getDate() {
@@ -51,15 +62,10 @@ public class Payroll extends BaseEntity {
 	}
 
 	public double getMonthlyBaseSalary() {
-		return contract.getAnnualBaseSalary() / 14;
+		return baseSalary;
 	}
 
 	public double getExtraSalary() {
-		if (date.getMonthValue() == 6 || date.getMonthValue() == 12) {
-			extraSalary = contract.getAnnualBaseSalary() / 14;
-			return extraSalary;
-		}
-		extraSalary = 0;
 		return extraSalary;
 	}
 
@@ -68,29 +74,28 @@ public class Payroll extends BaseEntity {
 	}
 
 	public double getTrienniumEarning() {
-		int trienniums = (int) ChronoUnit.YEARS.between(contract.getStartDate(),
-				date) / 3;
-		trienniumEarning = trienniums
-				* contract.getProfessionalGroup().getTrienniumPayment();
 		return trienniumEarning;
 	}
 
 	public double getTaxDeduction() {
-		return getGrossSalary() * contract.getTaxRate();
+		return taxDeduction;
 	}
 
 	public double getNicDeduction() {
-		nicDeduction = 0.05 * contract.getAnnualBaseSalary() / 12;
 		return nicDeduction;
 	}
 
+	public double getBaseSalary() {
+		return baseSalary;
+	}
+
 	public double getNetSalary() {
-		return contract.getAnnualBaseSalary() / 14 + extraSalary
-				+ productivityEarning + trienniumEarning - taxDeduction - nicDeduction;
+		return getMonthlyBaseSalary() + extraSalary + productivityEarning
+				+ trienniumEarning - taxDeduction - nicDeduction;
 	}
 
 	public double getTotalDeductions() {
-		return 0;
+		return getTaxDeduction() + getNicDeduction();
 	}
 
 	void _setContract(Contract contract2) {
@@ -110,13 +115,50 @@ public class Payroll extends BaseEntity {
 			return 0.0;
 		}
 
-		double mechanicProductivity = contract.getMechanic().getAssigned().stream()
-				.filter(a -> a.getDate().getMonthValue() == this.date.getMonthValue()
-						&& a.getDate().getYear() == this.date.getYear() && a.isInvoiced())
-				.mapToDouble(w -> w.getAmount()).sum();
+		double mechanicProductivity = 0.0;
+
+		for (Intervention i : contract.getMechanic().getInterventions()) {
+			WorkOrder w = i.getWorkOrder();
+			if (w.getDate().getMonth().equals(this.date.getMonth())
+					&& w.getDate().getYear() == this.date.getYear()) {
+				mechanicProductivity += w.getAmount();
+			}
+		}
 
 		return productivityRate * mechanicProductivity;
 
+	}
+
+	private double calculateTaxDeduction() {
+		return getGrossSalary() * contract.getTaxRate();
+	}
+
+	private double calculateNicDeduction() {
+		return 0.05 * contract.getAnnualBaseSalary() / 12;
+	}
+
+	private double calculateTrienniumEarning() {
+		int trienniums = (int) ChronoUnit.YEARS.between(contract.getStartDate(),
+				date) / 3;
+		return trienniums * contract.getProfessionalGroup().getTrienniumPayment();
+	}
+
+	private double calculateExtraSalary() {
+		double extraSalary;
+		if (date.getMonthValue() == 6 || date.getMonthValue() == 12) {
+			extraSalary = contract.getAnnualBaseSalary() / 14;
+			return extraSalary;
+		}
+		return 0.0;
+	}
+
+	private void calculateFields() {
+		this.baseSalary = contract.getAnnualBaseSalary() / 14;
+		this.productivityEarning = calculateProductivityEarning();
+		this.nicDeduction = calculateNicDeduction();
+		this.trienniumEarning = calculateTrienniumEarning();
+		this.extraSalary = calculateExtraSalary();
+		this.taxDeduction = calculateTaxDeduction();
 	}
 
 }

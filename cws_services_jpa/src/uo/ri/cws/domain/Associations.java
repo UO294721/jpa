@@ -45,8 +45,8 @@ public class Associations {
 	public static class Fixes {
 
 		public static void link(Vehicle vehicle, WorkOrder workOrder) {
-			vehicle._getWorkOrders().add(workOrder);
 			workOrder._setVehicle(vehicle);
+			vehicle._getWorkOrders().add(workOrder);
 		}
 
 		public static void unlink(Vehicle vehicle, WorkOrder workOrder) {
@@ -73,6 +73,7 @@ public class Associations {
 		public static void link(Invoice invoice, Charge cargo, PaymentMean mp) {
 			cargo._setInvoice(invoice);
 			cargo._setPaymentMean(mp);
+
 			invoice._getCharges().add(cargo);
 			mp._getCharges().add(cargo);
 		}
@@ -80,6 +81,7 @@ public class Associations {
 		public static void unlink(Charge cargo) {
 			cargo._getInvoice()._getCharges().remove(cargo);
 			cargo._getPaymentMean()._getCharges().remove(cargo);
+
 			cargo._setInvoice(null);
 			cargo._setPaymentMean(null);
 		}
@@ -104,6 +106,7 @@ public class Associations {
 				Mechanic mechanic) {
 			intervention._setWorkOrder(workOrder);
 			intervention._setMechanic(mechanic);
+
 			workOrder._getInterventions().add(intervention);
 			mechanic._getInterventions().add(intervention);
 		}
@@ -123,6 +126,7 @@ public class Associations {
 				Intervention intervention) {
 			substitution._setIntervention(intervention);
 			substitution._setSparePart(sparePart);
+
 			sparePart._getSubstitutions().add(substitution);
 			intervention._getSubstitutions().add(substitution);
 		}
@@ -130,6 +134,7 @@ public class Associations {
 		public static void unlink(Substitution substitution) {
 			substitution._getSparePart()._getSubstitutions().remove(substitution);
 			substitution._getIntervention()._getSubstitutions().remove(substitution);
+
 			substitution._setIntervention(null);
 			substitution._setSparePart(null);
 		}
