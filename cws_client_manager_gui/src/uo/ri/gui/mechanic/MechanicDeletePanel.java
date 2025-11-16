@@ -21,21 +21,17 @@ import uo.ri.cws.application.service.mechanic.MechanicCrudService.MechanicDto;
 import uo.ri.gui.MainFrame;
 import uo.ri.gui.WelcomePanel;
 
-public class MechanicUpdatePanel extends JPanel {
-
-	/**
-	 * 
-	 */
+public class MechanicDeletePanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private JTextField idField;
-	private JTextField nameField;
-	private JTextField surnameField;
 	private JLabel nifLabel;
+	private JLabel nameLabel;
+	private JLabel surnameLabel;
 	private MechanicCrudService service;
 	private MainFrame parentFrame;
 	private MechanicDto currentMechanic;
 
-	public MechanicUpdatePanel(MainFrame parentFrame) {
+	public MechanicDeletePanel(MainFrame parentFrame) {
 		this.parentFrame = parentFrame;
 		this.service = Factories.service.forMechanicCrudService();
 		initializeUI();
@@ -44,7 +40,7 @@ public class MechanicUpdatePanel extends JPanel {
 	private void initializeUI() {
 		setLayout(new BorderLayout(10, 10));
 
-		JLabel titleLabel = new JLabel("Update Mechanic");
+		JLabel titleLabel = new JLabel("Delete Mechanic");
 		titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
 		titleLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		add(titleLabel, BorderLayout.NORTH);
@@ -83,7 +79,7 @@ public class MechanicUpdatePanel extends JPanel {
 		nifLabel = new JLabel("-");
 		formPanel.add(nifLabel, gbc);
 
-		// Name field
+		// Name (read-only)
 		gbc.gridx = 0;
 		gbc.gridy = 2;
 		gbc.weightx = 0.3;
@@ -91,11 +87,10 @@ public class MechanicUpdatePanel extends JPanel {
 
 		gbc.gridx = 1;
 		gbc.weightx = 0.7;
-		nameField = new JTextField(20);
-		nameField.setEnabled(false);
-		formPanel.add(nameField, gbc);
+		nameLabel = new JLabel("-");
+		formPanel.add(nameLabel, gbc);
 
-		// Surname field
+		// Surname (read-only)
 		gbc.gridx = 0;
 		gbc.gridy = 3;
 		gbc.weightx = 0.3;
@@ -103,17 +98,16 @@ public class MechanicUpdatePanel extends JPanel {
 
 		gbc.gridx = 1;
 		gbc.weightx = 0.7;
-		surnameField = new JTextField(20);
-		surnameField.setEnabled(false);
-		formPanel.add(surnameField, gbc);
+		surnameLabel = new JLabel("-");
+		formPanel.add(surnameLabel, gbc);
 
 		add(formPanel, BorderLayout.CENTER);
 
 		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
 
-		JButton updateButton = new JButton("Update");
-		updateButton.addActionListener(e -> updateMechanic());
-		buttonPanel.add(updateButton);
+		JButton deleteButton = new JButton("Delete");
+		deleteButton.addActionListener(e -> deleteMechanic());
+		buttonPanel.add(deleteButton);
 
 		JButton cancelButton = new JButton("Cancel");
 		cancelButton.addActionListener(
@@ -136,10 +130,8 @@ public class MechanicUpdatePanel extends JPanel {
 			if (result.isPresent()) {
 				currentMechanic = result.get();
 				nifLabel.setText(currentMechanic.nif);
-				nameField.setText(currentMechanic.name);
-				surnameField.setText(currentMechanic.surname);
-				nameField.setEnabled(true);
-				surnameField.setEnabled(true);
+				nameLabel.setText(currentMechanic.name);
+				surnameLabel.setText(currentMechanic.surname);
 				parentFrame.setStatus("Mechanic loaded: " + currentMechanic.name);
 			} else {
 				JOptionPane.showMessageDialog(this, "Mechanic not found with ID: " + id,
@@ -151,25 +143,40 @@ public class MechanicUpdatePanel extends JPanel {
 		}
 	}
 
-	private void updateMechanic() {
+	private void deleteMechanic() {
 		if (currentMechanic == null) {
 			JOptionPane.showMessageDialog(this, "Please search for a mechanic first",
 					"Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 
-		try {
-			currentMechanic.name = nameField.getText().trim();
-			currentMechanic.surname = surnameField.getText().trim();
+		int confirm = JOptionPane.showConfirmDialog(this,
+				"Are you sure you want to delete mechanic: " + currentMechanic.name
+						+ " " + currentMechanic.surname + "?",
+				"Confirm Deletion", JOptionPane.YES_NO_OPTION,
+				JOptionPane.WARNING_MESSAGE);
 
-			service.update(currentMechanic);
-
-			JOptionPane.showMessageDialog(this, "Mechanic updated successfully!",
-					"Success", JOptionPane.INFORMATION_MESSAGE);
-			parentFrame.setStatus("Mechanic updated: " + currentMechanic.name);
-		} catch (Exception ex) {
-			JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error",
-					JOptionPane.ERROR_MESSAGE);
+		if (confirm == JOptionPane.YES_OPTION) {
+			try {
+				service.delete(currentMechanic.id);
+				JOptionPane.showMessageDialog(this, "Mechanic deleted successfully!",
+						"Success", JOptionPane.INFORMATION_MESSAGE);
+				parentFrame.setStatus("Mechanic deleted: " + currentMechanic.name);
+				currentMechanic = null;
+				clearFields();
+			} catch (Exception ex) {
+				JOptionPane.showMessageDialog(this,
+						"Error deleting mechanic: " + ex.getMessage(), "Error",
+						JOptionPane.ERROR_MESSAGE);
+			}
 		}
+	}
+
+	private void clearFields() {
+		idField.setText("");
+		nifLabel.setText("-");
+		nameLabel.setText("-");
+		surnameLabel.setText("-");
+		idField.requestFocus();
 	}
 }

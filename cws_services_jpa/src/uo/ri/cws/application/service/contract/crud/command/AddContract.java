@@ -32,7 +32,6 @@ public class AddContract implements Command<ContractDto> {
 
 	public AddContract(ContractDto c) {
 		ArgumentChecks.isNotNull(c, "The contract dto cannot be null");
-		ArgumentChecks.isNotNull(c.id, "The contract id cannot be null");
 		ArgumentChecks.isNotNull(c.mechanic, "The mechanic cannot be null");
 		ArgumentChecks.isNotEmpty(c.mechanic.nif,
 				"The mechanic nif cannot be null");

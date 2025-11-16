@@ -1,4 +1,4 @@
-package uo.ri.gui.mechanic;
+package uo.ri.gui.contracttype;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -15,42 +15,32 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import uo.ri.conf.Factories;
-import uo.ri.cws.application.service.mechanic.MechanicCrudService;
-import uo.ri.cws.application.service.mechanic.MechanicCrudService.MechanicDto;
+import uo.ri.cws.application.service.contracttype.ContractTypeCrudService;
+import uo.ri.cws.application.service.contracttype.ContractTypeCrudService.ContractTypeDto;
 import uo.ri.gui.MainFrame;
 import uo.ri.gui.WelcomePanel;
 
-/**
- * Panel for adding a new mechanic
- */
-public class MechanicFormPanel extends JPanel {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 2674512975389579966L;
-	private JTextField nifField;
+public class ContractTypeFormPanel extends JPanel {
+	private static final long serialVersionUID = 1L;
 	private JTextField nameField;
-	private JTextField surnameField;
-	private MechanicCrudService service;
+	private JTextField compensationDaysField;
+	private ContractTypeCrudService service;
 	private MainFrame parentFrame;
 
-	public MechanicFormPanel(MainFrame parentFrame) {
+	public ContractTypeFormPanel(MainFrame parentFrame) {
 		this.parentFrame = parentFrame;
-		this.service = Factories.service.forMechanicCrudService();
+		this.service = Factories.service.forContractTypeCrudService();
 		initializeUI();
 	}
 
 	private void initializeUI() {
 		setLayout(new BorderLayout(10, 10));
 
-		// Title
-		JLabel titleLabel = new JLabel("Add New Mechanic");
+		JLabel titleLabel = new JLabel("Add New Contract Type");
 		titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
 		titleLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		add(titleLabel, BorderLayout.NORTH);
 
-		// Form panel
 		JPanel formPanel = new JPanel(new GridBagLayout());
 		formPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -58,46 +48,42 @@ public class MechanicFormPanel extends JPanel {
 		gbc.anchor = GridBagConstraints.WEST;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 
-		// NIF field
+		// Name field
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.weightx = 0.3;
-		formPanel.add(new JLabel("NIF:"), gbc);
-
-		gbc.gridx = 1;
-		gbc.weightx = 0.7;
-		nifField = new JTextField(20);
-		formPanel.add(nifField, gbc);
-
-		// Name field
-		gbc.gridx = 0;
-		gbc.gridy = 1;
-		gbc.weightx = 0.3;
-		formPanel.add(new JLabel("Name:"), gbc);
+		formPanel.add(new JLabel("Contract Type Name:"), gbc);
 
 		gbc.gridx = 1;
 		gbc.weightx = 0.7;
 		nameField = new JTextField(20);
 		formPanel.add(nameField, gbc);
 
-		// Surname field
+		// Help text for name
+		gbc.gridx = 1;
+		gbc.gridy = 1;
+		JLabel helpLabel = new JLabel(
+				"<html><i>Examples: PERMANENT, SEASONAL, FIXED_TERM</i></html>");
+		helpLabel.setFont(new Font("Arial", Font.PLAIN, 11));
+		formPanel.add(helpLabel, gbc);
+
+		// Compensation Days field
 		gbc.gridx = 0;
 		gbc.gridy = 2;
 		gbc.weightx = 0.3;
-		formPanel.add(new JLabel("Surname:"), gbc);
+		formPanel.add(new JLabel("Compensation Days/Year:"), gbc);
 
 		gbc.gridx = 1;
 		gbc.weightx = 0.7;
-		surnameField = new JTextField(20);
-		formPanel.add(surnameField, gbc);
+		compensationDaysField = new JTextField(20);
+		formPanel.add(compensationDaysField, gbc);
 
 		add(formPanel, BorderLayout.CENTER);
 
-		// Buttons panel
 		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
 
 		JButton saveButton = new JButton("Save");
-		saveButton.addActionListener(e -> saveMechanic());
+		saveButton.addActionListener(e -> saveContractType());
 		buttonPanel.add(saveButton);
 
 		JButton clearButton = new JButton("Clear");
@@ -112,47 +98,51 @@ public class MechanicFormPanel extends JPanel {
 		add(buttonPanel, BorderLayout.SOUTH);
 	}
 
-	private void saveMechanic() {
+	private void saveContractType() {
 		try {
-			// Validate input
-			String nif = nifField.getText().trim();
 			String name = nameField.getText().trim();
-			String surname = surnameField.getText().trim();
+			String compensationText = compensationDaysField.getText().trim();
 
-			if (nif.isEmpty() || name.isEmpty() || surname.isEmpty()) {
+			if (name.isEmpty() || compensationText.isEmpty()) {
 				JOptionPane.showMessageDialog(this, "All fields are required!",
 						"Validation Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 
-			// Create DTO
-			MechanicDto dto = new MechanicDto();
-			dto.nif = nif;
-			dto.name = name;
-			dto.surname = surname;
+			double compensationDays = Double.parseDouble(compensationText);
 
-			// Save
-			MechanicDto savedMechanic = service.create(dto);
+			if (compensationDays <= 0) {
+				JOptionPane.showMessageDialog(this,
+						"Compensation days must be positive!", "Validation Error",
+						JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 
-			JOptionPane.showMessageDialog(this,
-					"Mechanic created successfully!\nID: " + savedMechanic.id, "Success",
-					JOptionPane.INFORMATION_MESSAGE);
+			ContractTypeDto dto = new ContractTypeDto();
+			dto.name = name.toUpperCase(); // Normalize to uppercase
+			dto.compensationDays = compensationDays;
+
+			service.create(dto);
+
+			JOptionPane.showMessageDialog(this, "Contract type created successfully!",
+					"Success", JOptionPane.INFORMATION_MESSAGE);
 
 			clearFields();
-			parentFrame.setStatus("Mechanic created: " + savedMechanic.name);
+			parentFrame.setStatus("Contract type created: " + dto.name);
 
+		} catch (NumberFormatException ex) {
+			JOptionPane.showMessageDialog(this, "Invalid compensation days format!",
+					"Validation Error", JOptionPane.ERROR_MESSAGE);
 		} catch (Exception ex) {
 			JOptionPane.showMessageDialog(this,
-					"Error creating mechanic: " + ex.getMessage(), "Error",
+					"Error creating contract type: " + ex.getMessage(), "Error",
 					JOptionPane.ERROR_MESSAGE);
-			ex.printStackTrace();
 		}
 	}
 
 	private void clearFields() {
-		nifField.setText("");
 		nameField.setText("");
-		surnameField.setText("");
-		nifField.requestFocus();
+		compensationDaysField.setText("");
+		nameField.requestFocus();
 	}
 }

@@ -13,6 +13,17 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import uo.ri.gui.contract.ContractDeletePanel;
+import uo.ri.gui.contract.ContractDetailsPanel;
+import uo.ri.gui.contract.ContractFormPanel;
+import uo.ri.gui.contract.ContractTerminatePanel;
+import uo.ri.gui.contract.ContractUpdatePanel;
+import uo.ri.gui.contract.ContractsListPanel;
+import uo.ri.gui.contracttype.ContractTypeDeletePanel;
+import uo.ri.gui.contracttype.ContractTypeFormPanel;
+import uo.ri.gui.contracttype.ContractTypeUpdatePanel;
+import uo.ri.gui.contracttype.ContractTypesListPanel;
+import uo.ri.gui.mechanic.MechanicDeletePanel;
 import uo.ri.gui.mechanic.MechanicFormPanel;
 import uo.ri.gui.mechanic.MechanicUpdatePanel;
 import uo.ri.gui.mechanic.MechanicsListPanel;
@@ -103,53 +114,7 @@ public class MainFrame extends JFrame {
 				e -> showPanel(new ContractTypeDeletePanel(this)));
 		contractsMenu.add(contractTypesMenu);
 
-		JMenu professionalGroupsMenu = new JMenu("Professional Groups");
-		addMenuItem(professionalGroupsMenu, "List Professional Groups", 'L',
-				e -> showPanel(new ProfessionalGroupsListPanel()));
-		addMenuItem(professionalGroupsMenu, "Add Professional Group", 'A',
-				e -> showPanel(new ProfessionalGroupFormPanel(this)));
-		addMenuItem(professionalGroupsMenu, "Update Professional Group", 'U',
-				e -> showPanel(new ProfessionalGroupUpdatePanel(this)));
-		addMenuItem(professionalGroupsMenu, "Delete Professional Group", 'D',
-				e -> showPanel(new ProfessionalGroupDeletePanel(this)));
-		contractsMenu.add(professionalGroupsMenu);
-
 		menuBar.add(contractsMenu);
-
-		// Payrolls Menu
-		JMenu payrollsMenu = new JMenu("Payrolls");
-		payrollsMenu.setMnemonic('P');
-
-		addMenuItem(payrollsMenu, "Generate Payrolls Today", 'G',
-				e -> showPanel(new PayrollGeneratePanel(this)));
-		addMenuItem(payrollsMenu, "Generate Payrolls for Date", 'D',
-				e -> showPanel(new PayrollGenerateDatePanel(this)));
-		addMenuItem(payrollsMenu, "View Payroll Details", 'V',
-				e -> showPanel(new PayrollDetailsPanel(this)));
-		addMenuItem(payrollsMenu, "List Payrolls by Mechanic", 'M',
-				e -> showPanel(new PayrollsByMechanicPanel(this)));
-		addMenuItem(payrollsMenu, "List Payrolls by Professional Group", 'P',
-				e -> showPanel(new PayrollsByGroupPanel(this)));
-		payrollsMenu.addSeparator();
-		addMenuItem(payrollsMenu, "Delete Last Month Payrolls", 'L',
-				e -> deleteLastMonthPayrolls());
-		addMenuItem(payrollsMenu, "Delete Last Payroll of Mechanic", 'E',
-				e -> showPanel(new PayrollDeleteMechanicPanel(this)));
-
-		menuBar.add(payrollsMenu);
-
-		// Invoices Menu
-		JMenu invoicesMenu = new JMenu("Invoices");
-		invoicesMenu.setMnemonic('I');
-
-		addMenuItem(invoicesMenu, "Create Invoice", 'C',
-				e -> showPanel(new InvoiceCreatePanel(this)));
-		addMenuItem(invoicesMenu, "View Invoice", 'V',
-				e -> showPanel(new InvoiceViewPanel(this)));
-		addMenuItem(invoicesMenu, "List Work Orders", 'W',
-				e -> showPanel(new WorkOrdersListPanel()));
-
-		menuBar.add(invoicesMenu);
 
 		// Help Menu
 		JMenu helpMenu = new JMenu("Help");
@@ -176,7 +141,7 @@ public class MainFrame extends JFrame {
 		contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
 		// Show welcome panel by default
-		showPanel(new WelcomePanel());
+		showPanel(new WelcomePanel(this));
 
 		add(contentPanel, BorderLayout.CENTER);
 	}
@@ -221,16 +186,5 @@ public class MainFrame extends JFrame {
 				+ "For more information, consult the system documentation.";
 		JOptionPane.showMessageDialog(this, guide, "User Guide",
 				JOptionPane.INFORMATION_MESSAGE);
-	}
-
-	private void deleteLastMonthPayrolls() {
-		int result = JOptionPane.showConfirmDialog(this,
-				"Are you sure you want to delete all payrolls from last month?",
-				"Confirm Deletion", JOptionPane.YES_NO_OPTION,
-				JOptionPane.WARNING_MESSAGE);
-
-		if (result == JOptionPane.YES_OPTION) {
-			showPanel(new PayrollDeleteLastMonthPanel(this));
-		}
 	}
 }
